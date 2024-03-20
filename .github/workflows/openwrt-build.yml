@@ -57,27 +57,27 @@ jobs:
       - name: Clone source code
         run: |
           git clone --depth 1 https://github.com/coolsnowwolf/lede openwrt
-          git clone --depth 1 https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic.git openwrt/package/music
+          # git clone --depth 1 https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic.git openwrt/package/music
 
       - name: Update feeds
         run: |
-          echo 'src-git helloworld https://github.com/fw876/helloworld' >> openwrt/feeds.conf.default
+          # echo 'src-git helloworld https://github.com/fw876/helloworld' >> openwrt/feeds.conf.default
           openwrt/scripts/feeds update -a -f
           openwrt/scripts/feeds install -a -f
 
-      - name: Generate configuration file
-        run: |
-          rm -f openwrt/.config*
-          mv config/x86.config openwrt/.config
+      # - name: Generate configuration file
+      #   run: |
+      #     rm -f openwrt/.config*
+      #     mv config/x86.config openwrt/.config
 
-      - name: SSH connection to Actions
-        uses: P3TERX/ssh2actions@v1.0.0
-        if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
+      # - name: SSH connection to Actions
+      #   uses: P3TERX/ssh2actions@v1.0.0
+      #   if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
 
-      - name: change settings
-        run: |
-          sed -i 's/^[ \t]*//g' openwrt/.config
-          sudo bash ./script/setting.sh
+      # - name: change settings
+      #   run: |
+      #     sed -i 's/^[ \t]*//g' openwrt/.config
+      #     sudo bash ./script/setting.sh
 
       - name: Download packages
         run: |
