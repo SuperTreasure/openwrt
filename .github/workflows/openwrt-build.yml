@@ -123,9 +123,3 @@ jobs:
         with:
           name: OpenWrt_firmware
           path: openwrt/bin/targets/
-
-      - name: Upload firmware
-        uses: actions/upload-artifact@v4
-        with:
-          name: OpenWrt
-          path: openwrt
