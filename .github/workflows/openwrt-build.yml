@@ -130,4 +130,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OpenWrt_sdk
-          path:openwrt/artifact/sdk/
+          path: openwrt/artifact/sdk/
