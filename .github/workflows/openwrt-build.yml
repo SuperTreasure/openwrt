@@ -61,24 +61,24 @@ jobs:
 
       - name: Update feeds
         run: |
-          echo 'src-git helloworld https://github.com/fw876/helloworld' >> openwrt/feeds.conf.default
-          echo 'src-git smpackage https://github.com/kenzok8/small-package' >> openwrt/feeds.conf.default
+          # echo 'src-git helloworld https://github.com/fw876/helloworld' >> openwrt/feeds.conf.default
+          # echo 'src-git smpackage https://github.com/kenzok8/small-package' >> openwrt/feeds.conf.default
           openwrt/scripts/feeds update -a -f
           openwrt/scripts/feeds install -a -f
 
-      - name: Generate configuration file
-        run: |
-          rm -f openwrt/.config*
-          mv config/x86.config openwrt/.config
+      # - name: Generate configuration file
+      #   run: |
+      #     rm -f openwrt/.config*
+      #     mv config/x86.config openwrt/.config
 
-      - name: SSH connection to Actions
-        uses: P3TERX/ssh2actions@v1.0.0
-        if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
+      # - name: SSH connection to Actions
+      #   uses: P3TERX/ssh2actions@v1.0.0
+      #   if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
 
-      - name: change settings
-        run: |
-          sed -i 's/^[ \t]*//g' openwrt/.config
-          sudo bash ./script/setting.sh
+      # - name: change settings
+      #   run: |
+      #     sed -i 's/^[ \t]*//g' openwrt/.config
+      #     sudo bash ./script/setting.sh
 
       - name: Download packages
         run: |
@@ -102,8 +102,10 @@ jobs:
           cd openwrt
           mkdir -p ./artifact/package
           mkdir -p ./artifact/buildinfo
+          mkdir -p ./artifact/sdk
           rm -rf $(find ./bin/targets/ -type d -name "packages")
           cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
+          cp -rf $(find ./bin/packages/ -type f -name "*sdk*.tar.xz") ./artifact/sdk/
           cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
       - name: Upload buildinfo
@@ -123,3 +125,9 @@ jobs:
         with:
           name: OpenWrt_firmware
           path: openwrt/bin/targets/
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenWrt_sdk
+          path:openwrt/artifact/sdk/
