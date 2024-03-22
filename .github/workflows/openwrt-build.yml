@@ -66,19 +66,18 @@ jobs:
           openwrt/scripts/feeds update -a -f
           openwrt/scripts/feeds install -a -f
 
-      # - name: Generate configuration file
-      #   run: |
-      #     rm -f openwrt/.config*
-      #     mv config/x86.config openwrt/.config
+      - name: Generate configuration file
+        run: |
+          mv config/x86.config openwrt/.config
 
-      # - name: SSH connection to Actions
-      #   uses: P3TERX/ssh2actions@v1.0.0
-      #   if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
+      - name: SSH connection to Actions
+        uses: P3TERX/ssh2actions@v1.0.0
+        if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
 
-      # - name: change settings
-      #   run: |
-      #     sed -i 's/^[ \t]*//g' openwrt/.config
-      #     sudo bash ./script/setting.sh
+      - name: change settings
+        run: |
+          sed -i 's/^[ \t]*//g' openwrt/.config
+          sudo bash ./script/setting.sh
 
       - name: Download packages
         run: |
@@ -105,7 +104,8 @@ jobs:
           mkdir -p ./artifact/sdk
           rm -rf $(find ./bin/targets/ -type d -name "packages")
           cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
-          cp -rf $(find ./bin/targets/ -type f -name "openwrt-sdk*.tar.xz") ./artifact/sdk/
+          cp -rf $(find ./bin/targets/ -type f -name "*sdk*.tar.xz") ./artifact/sdk/
+          rm -rf $(find ./bin/targets/ -type f -name "*sdk*.tar.xz")
           cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
       - name: Upload buildinfo
