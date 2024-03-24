@@ -9,6 +9,7 @@ name: openwrt 编译
 
 on:
   repository_dispatch:
+    types: [openwrt-build]
   workflow_dispatch:
     inputs:
       ssh:
@@ -57,12 +58,9 @@ jobs:
       - name: Clone source code
         run: |
           git clone --depth 1 https://github.com/coolsnowwolf/lede openwrt
-          git clone --depth 1 https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic.git openwrt/package/music
 
       - name: Update feeds
         run: |
-          # echo 'src-git helloworld https://github.com/fw876/helloworld' >> openwrt/feeds.conf.default
-          # echo 'src-git smpackage https://github.com/kenzok8/small-package' >> openwrt/feeds.conf.default
           openwrt/scripts/feeds update -a -f
           openwrt/scripts/feeds install -a -f
 
@@ -108,6 +106,19 @@ jobs:
           rm -rf $(find ./bin/targets/ -type f -name "*sdk*.tar.xz")
           cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
+      - name: Get Commit Hash
+        id: getHash
+        run: |
+          git clone --depth 1 $REPO_URL -b $REPO_BRANCH .
+          echo "commitHash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Compare Commit Hash
+        id: cacheHash
+        uses: actions/cache@v4
+        with:
+          path: openwrt/artifact/sdk
+          key: sdk_Hash_${{ steps.getHash.outputs.commitHash }}
+
       - name: Upload buildinfo
         uses: actions/upload-artifact@v4
         with:
@@ -131,3 +142,11 @@ jobs:
         with:
           name: OpenWrt_sdk
           path: openwrt/artifact/sdk/
+
+      - name: Trigger build
+        if: steps.cacheHash.outputs.cache-hit != 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ github.token }}
+          event-type: plugin-build
+          client-payload: '{"hash": "${{ steps.getHash.outputs.commitHash }}"}'

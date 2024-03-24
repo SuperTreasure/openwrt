@@ -1,0 +1,94 @@
+#
+# <https://github.com/KFERMercer/OpenWrt-CI>
+#
+# Copyright (C) 2019 P3TERX
+#
+# Copyright (C) 2020 KFERMercer
+#
+name: 编译插件
+
+on:
+  repository_dispatch:
+    types: [plugin-build]
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: "SSH connection to Actions"
+        required: false
+        default: "false"
+  # push:
+  #   branches:
+  #     - master
+  # schedule:
+  #   - cron: 0 0 */3 * *
+
+permissions:
+  contents: read
+
+env:
+  SSH_ACTIONS: false
+  TZ: Asia/Shanghai
+
+jobs:
+  build_openwrt:
+    name: Build OpenWrt Firmware
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Space cleanup and Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker rmi `docker images -q`
+          sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/apt/sources.list.d /usr/local/lib/android
+          sudo -E apt-mark hold grub-efi-amd64-signed
+          sudo -E apt update
+          sudo -E apt -y purge azure-cli* docker* ghc* zulu* llvm* firefox google* dotnet* powershell* openjdk* mysql* php* mongodb* dotnet*  snap*
+          sudo -E apt -y full-upgrade
+          sudo -E apt -y install file python3-distutils libncurses-dev g++ clang libfuse-dev ack antlr3 aria2 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip libpython3-dev qemu-utils rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
+          sudo -E systemctl daemon-reload
+          sudo -E apt -y autoremove --purge
+          sudo -E apt clean
+          sudo -E timedatectl set-timezone "$TZ"
+
+      - name: Checkout OpenWrt
+        uses: actions/checkout@v4
+
+      - name: Compare Commit Hash
+        id: cacheHash
+        uses: actions/cache@v4
+        with:
+          path: openwrt/artifact/sdk
+          key: sdk_Hash_${{ github.event.client_payload.hash }}
+
+      - name: tar sdk
+        run: |
+          mv openwrt/artifact/sdk/*.tar.xz ./
+          rm -rf openwrt
+          tar -xvf *sdk*.tar.xz
+          mv *sdk* openwrt
+
+      - name: Download plugin
+        run: |
+          cd openwrt
+          sed -i '$a src-git NueXini_Packages https://github.com/NueXini/NueXini_Packages.git' feeds.conf.default
+
+      - name: Update feeds
+        run: |
+          openwrt/scripts/feeds update -a -f
+          openwrt/scripts/feeds install -a -f -p NueXini_Packages
+          openwrt/scripts/feeds install luci-app-passwall
+
+      - name: SSH connection to Actions
+        uses: P3TERX/ssh2actions@v1.0.0
+        if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
+
+      - name: Download packages
+        run: |
+          cd openwrt && make defconfig && make download -j16
+
+      - name: Compile firmware
+        run: |
+          cd openwrt
+          make package/luci-app-passwall/compile V=99
