@@ -28,6 +28,8 @@ permissions:
 env:
   SSH_ACTIONS: false
   TZ: Asia/Shanghai
+  REPO_URL: https://github.com/coolsnowwolf/lede 
+  REPO_BRANCH: master
 
 jobs:
   build_openwrt:
