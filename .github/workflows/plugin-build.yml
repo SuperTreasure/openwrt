@@ -63,12 +63,14 @@ jobs:
         run: |
           cd openwrt
           # sed -i '$a src-git NueXini_Packages https://github.com/NueXini/NueXini_Packages.git' feeds.conf.default
-          sed -i '$a src-git NueXini_Packages https://github.com/kenzok8/small-package' feeds.conf.default
+          sed -i '$a src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
+          sed -i '$a src-git small https://github.com/kenzok8/small' feeds.conf.default
 
       - name: Update feeds
         run: |
           openwrt/scripts/feeds update -a -f
-          openwrt/scripts/feeds install -a -f -p NueXini_Packages
+          openwrt/scripts/feeds install -a -f -p kenzo
+          openwrt/scripts/feeds install -a -f -p small
           openwrt/scripts/feeds install luci-app-passwall
 
       - name: SSH connection to Actions
@@ -83,3 +85,4 @@ jobs:
         run: |
           cd openwrt
           make package/luci-app-passwall/compile V=99
+          make package/luci-app-passwall/alist V=99
