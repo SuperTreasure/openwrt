@@ -56,7 +56,8 @@ jobs:
           mv openwrt/artifact/sdk/*.tar.xz ./
           rm -rf openwrt
           tar -xvf *sdk*.tar.xz
-          mv *sdk* openwrt
+          ll
+          mv ./*sdk* ./openwrt
 
       - name: Download plugin
         run: |
