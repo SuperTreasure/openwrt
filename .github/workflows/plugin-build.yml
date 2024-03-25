@@ -56,7 +56,8 @@ jobs:
           mv openwrt/artifact/sdk/*.tar.xz ./
           rm -rf openwrt
           tar -xvf *sdk*.tar.xz
-          mv *sdk* openwrt
+          rm -rf *sdk*.tar.xz
+          mv ./*sdk* ./openwrt
 
       - name: Download plugin
         run: |
@@ -75,7 +76,7 @@ jobs:
 
       - name: Download packages
         run: |
-          cd openwrt && make defconfig && make download -j16
+          cd openwrt && make defconfig && make download -j1 V=s
 
       - name: Compile firmware
         run: |
