@@ -84,5 +84,5 @@ jobs:
       - name: Compile firmware
         run: |
           cd openwrt
+          make package/luci-app-alist/compile V=99
           make package/luci-app-passwall/compile V=99
-          make package/luci-app-passwall/alist V=99
