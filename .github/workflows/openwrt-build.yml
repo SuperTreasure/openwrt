@@ -16,20 +16,10 @@ on:
         description: "SSH connection to Actions"
         required: false
         default: "false"
-  # push:
-  #   branches:
-  #     - master
-  # schedule:
-  #   - cron: 0 0 */3 * *
-
-permissions:
-  contents: read
 
 env:
   SSH_ACTIONS: false
   TZ: Asia/Shanghai
-  REPO_URL: https://github.com/coolsnowwolf/lede 
-  REPO_BRANCH: master
 
 jobs:
   build_openwrt:
